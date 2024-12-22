@@ -5,6 +5,7 @@ let activeTabId = null; // Active tab ID
 let activeDomain = null; // Active domain
 let startTime = null; // Start time of active tab tracking
 let popupPort = null; // Reference to the connected popup port
+let browserFocused = true; // Track browser focus state
 
 // Utility to extract domain from URL
 function getDomain(url) {
@@ -25,12 +26,12 @@ function saveUsageData(domain, timeSpent) {
 
 // Track active tab time
 function trackTime() {
+  if (!browserFocused || !activeTabId || !startTime || !activeDomain) return; // Skip tracking if the browser is not focused
+
   const now = Date.now();
-  if (activeTabId && startTime && activeDomain) {
-    const timeSpent = (now - startTime) / 1000; // Time in seconds
-    saveUsageData(activeDomain, timeSpent);
-    startTime = now; // Reset start time
-  }
+  const timeSpent = (now - startTime) / 1000; // Time in seconds
+  saveUsageData(activeDomain, timeSpent);
+  startTime = now; // Reset start time
 }
 
 // Handle tab changes
@@ -38,7 +39,7 @@ function handleTabChange(newTabId, newUrl) {
   trackTime(); // Save time spent on the previous tab
   activeTabId = newTabId;
   activeDomain = getDomain(newUrl);
-  startTime = Date.now(); // Reset the timer
+  startTime = browserFocused ? Date.now() : null; // Only set start time if the browser is focused
 }
 
 // Detect tab activation
@@ -57,19 +58,31 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-// Detect browser focus change
-chrome.windows.onFocusChanged.addListener((windowId) => {
-  if (windowId === chrome.windows.WINDOW_ID_NONE) {
-    // Browser is inactive
-    handleTabChange(null, null);
-  } else {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]) {
-        handleTabChange(tabs[0].id, tabs[0].url);
+// Check browser focus state using chrome.windows.get
+function checkBrowserFocus() {
+  chrome.windows.getLastFocused((window) => {
+    const currentlyFocused = window.focused;
+    if (currentlyFocused !== browserFocused) {
+      browserFocused = currentlyFocused;
+
+      if (!browserFocused) {
+        // Browser lost focus
+        trackTime(); // Save the current session time
+        startTime = null; // Stop the timer
+      } else {
+        // Browser regained focus
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs[0]) {
+            handleTabChange(tabs[0].id, tabs[0].url); // Resume tracking the active tab
+          }
+        });
       }
-    });
-  }
-});
+    }
+  });
+}
+
+// Start polling for focus state changes
+setInterval(checkBrowserFocus, 500); // Check every 500ms
 
 // Persistent connection for popup real-time updates
 chrome.runtime.onConnect.addListener((port) => {
@@ -140,7 +153,7 @@ function connectToDesktopApp() {
 
   socket.on('disconnect', () => {
     console.log('Socket.IO disconnected, retrying...');
-    setTimeout(connectToServer, 5000); // Retry connection
+    setTimeout(connectToDesktopApp, 5000); // Retry connection
   });
 }
 
