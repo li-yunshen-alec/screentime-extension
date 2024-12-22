@@ -1,3 +1,5 @@
+import { io } from "https://cdn.jsdelivr.net/npm/socket.io-client@4.7.1/+esm";
+
 let siteUsage = {}; // Store time spent on each site
 let activeTabId = null; // Active tab ID
 let activeDomain = null; // Active domain
@@ -114,4 +116,44 @@ setInterval(() => {
   if (!popupPort) {
     trackTime(); // Track usage when popup is not open
   }
+}, 1000);
+
+let socket;
+
+function connectToDesktopApp() {
+  socket = io('http://127.0.0.1:5000', {
+    forceNew: true,
+    transports: ["websocket"],
+  }); // Connect to the Socket.IO server
+
+  socket.on('connect', () => {
+    console.log('Socket.IO connection established');
+  });
+
+  socket.on('success', (message) => {
+    console.log('Server message:', message);
+  });
+
+  socket.on('error', (error) => {
+    console.error('Error from server:', error);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Socket.IO disconnected, retrying...');
+    setTimeout(connectToServer, 5000); // Retry connection
+  });
+}
+
+connectToDesktopApp();
+
+setInterval(() => {
+  chrome.storage.local.get(['siteUsage'], (data) => {
+    siteUsage = data.siteUsage || {};
+    if (socket && socket.connected) {
+      console.log('emitting web usage');
+      socket.emit('web_usage', siteUsage);
+    } else {
+      console.log('no socket', socket, socket.connected);
+    }
+  });
 }, 1000);
