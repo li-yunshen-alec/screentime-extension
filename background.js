@@ -6,12 +6,15 @@ let activeDomain = null; // Active domain
 let startTime = null; // Start time of active tab tracking
 let popupPort = null; // Reference to the connected popup port
 let browserFocused = true; // Track browser focus state
+const blockedDomains = ["example.com", "youtube.com"]; // List of domains to block
+const redirectPage = chrome.runtime.getURL("redirect.html");
 
 // Utility to extract domain from URL
 function getDomain(url) {
   try {
     const urlObj = new URL(url);
-    return urlObj.hostname;
+    const hostname = urlObj.hostname;
+    return hostname.startsWith('www.') ? hostname.slice(4) : hostname; // Normalize by removing 'www.'
   } catch {
     return null;
   }
@@ -34,12 +37,23 @@ function trackTime() {
   startTime = now; // Reset start time
 }
 
-// Handle tab changes
+// Handle tab changes or URL updates
 function handleTabChange(newTabId, newUrl) {
   trackTime(); // Save time spent on the previous tab
-  activeTabId = newTabId;
-  activeDomain = getDomain(newUrl);
-  startTime = browserFocused ? Date.now() : null; // Only set start time if the browser is focused
+
+  const newDomain = getDomain(newUrl);
+  const normalizedDomain = newDomain ? (newDomain.startsWith("www.") ? newDomain.slice(4) : newDomain) : null;
+
+  if (normalizedDomain !== activeDomain || newTabId !== activeTabId) {
+    activeTabId = newTabId;
+    activeDomain = normalizedDomain;
+    startTime = browserFocused ? Date.now() : null; // Only set start time if the browser is focused
+
+    // Redirect if the normalized domain is blocked
+    if (normalizedDomain && blockedDomains.includes(normalizedDomain)) {
+      chrome.tabs.update(activeTabId, { url: redirectPage });
+    }
+  }
 }
 
 // Detect tab activation
@@ -53,7 +67,7 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
 
 // Detect URL changes on tabs
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (tabId === activeTabId && changeInfo.url) {
+  if (changeInfo.url) {
     handleTabChange(tabId, changeInfo.url);
   }
 });
