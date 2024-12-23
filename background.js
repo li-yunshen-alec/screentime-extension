@@ -6,8 +6,14 @@ let activeDomain = null; // Active domain
 let startTime = null; // Start time of active tab tracking
 let popupPort = null; // Reference to the connected popup port
 let browserFocused = true; // Track browser focus state
-const blockedDomains = ["example.com", "youtube.com"]; // List of domains to block
+const blockedDomains = []; // List of domains to block
 const redirectPage = chrome.runtime.getURL("redirect.html");
+
+// Load blocked domains from local storage on extension startup
+chrome.storage.local.get(['blockedDomains'], (data) => {
+  blockedDomains = data.blockedDomains || blockedDomains;
+  console.log('Loaded blocked domains from storage:', blockedDomains);
+});
 
 // Utility to extract domain from URL
 function getDomain(url) {
@@ -169,6 +175,15 @@ function connectToDesktopApp() {
     console.log('Socket.IO disconnected, retrying...');
     setTimeout(connectToDesktopApp, 5000); // Retry connection
   });
+
+  // Listen for updates to blocked domains
+  socket.on('update_blocked_domains', (newDomain) => {
+    if (newDomain) {
+      console.log('New domain received from server:', newDomain);
+      blockedDomains.push(newDomain); // Update the local list of blocked domains
+      chrome.storage.local.set({ blockedDomains }); // Persist the list in local storage
+    }
+  });  
 }
 
 connectToDesktopApp();
