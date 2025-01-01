@@ -6,7 +6,7 @@ let activeDomain = null; // Active domain
 let startTime = null; // Start time of active tab tracking
 let popupPort = null; // Reference to the connected popup port
 let browserFocused = true; // Track browser focus state
-const blockedDomains = []; // List of domains to block
+let blockedDomains = []; // List of domains to block
 const redirectPage = chrome.runtime.getURL("redirect.html");
 
 // Load blocked domains from local storage on extension startup
@@ -177,13 +177,14 @@ function connectToDesktopApp() {
   });
 
   // Listen for updates to blocked domains
-  socket.on('update_blocked_domains', (newDomain) => {
-    if (newDomain) {
-      console.log('New domain received from server:', newDomain);
-      blockedDomains.push(newDomain); // Update the local list of blocked domains
+  socket.on('website_blacklist_updated', (data) => {
+    console.log('fdsjkahfdajskjfklas')
+    if (data && data.websites) {
+      console.log('New website blacklist received from server:', data.websites);
+      blockedDomains = data.websites; // Overwrite the local list of blocked domains
       chrome.storage.local.set({ blockedDomains }); // Persist the list in local storage
     }
-  });  
+  });
 }
 
 connectToDesktopApp();
