@@ -7,12 +7,19 @@ let startTime = null; // Start time of active tab tracking
 let popupPort = null; // Reference to the connected popup port
 let browserFocused = true; // Track browser focus state
 let blockedDomains = []; // List of domains to block
+let whitelistedDomains = []; // List of domains to block
 const redirectPage = chrome.runtime.getURL("redirect.html");
 
 // Load blocked domains from local storage on extension startup
 chrome.storage.local.get(['blockedDomains'], (data) => {
   blockedDomains = data.blockedDomains || blockedDomains;
   console.log('Loaded blocked domains from storage:', blockedDomains);
+});
+
+// Load whitelisted domains from local storage on extension startup
+chrome.storage.local.get(['whitelistedDomains'], (data) => {
+  whitelistedDomains = data.whitelistedDomains || whitelistedDomains;
+  console.log('Loaded whitelisted domains from storage:', whitelistedDomains);
 });
 
 // Utility to extract domain from URL
@@ -25,6 +32,28 @@ function getDomain(url) {
     return null;
   }
 }
+
+// Utility to check if a domain or subdomain is whitelisted
+function normalizeDomain(domain) {
+  if (!domain) return null;
+  return domain.replace(/^(https?:\/\/)?(www\.)?/i, '');
+}
+
+function isWhitelisted(domain) {
+  console.log('checking if whitelisted', domain);
+  if (!domain) return false;
+
+  const normalizedDomain = normalizeDomain(domain);
+
+  return whitelistedDomains.some((whitelistedDomain) => {
+    const normalizedWhitelistedDomain = normalizeDomain(whitelistedDomain);
+    return (
+      normalizedDomain === normalizedWhitelistedDomain ||
+      normalizedDomain.startsWith(normalizedWhitelistedDomain)
+    );
+  });
+}
+
 
 // Save accumulated time to storage
 function saveUsageData(domain, timeSpent) {
@@ -50,15 +79,18 @@ function handleTabChange(newTabId, newUrl) {
   const newDomain = getDomain(newUrl);
   const normalizedDomain = newDomain ? (newDomain.startsWith("www.") ? newDomain.slice(4) : newDomain) : null;
 
-  if (normalizedDomain !== activeDomain || newTabId !== activeTabId) {
+  // blocking logic
+  console.log("normalized domain PLEASE", normalizedDomain)
+
+  if (normalizedDomain && !isWhitelisted(newUrl) && blockedDomains.includes(normalizedDomain)) {
+    chrome.tabs.update(activeTabId, { url: redirectPage });
+  }
+
+  // handle time tracking if domain is changed
+  if (normalizedDomain !== activeDomain) {
     activeTabId = newTabId;
     activeDomain = normalizedDomain;
     startTime = browserFocused ? Date.now() : null; // Only set start time if the browser is focused
-
-    // Redirect if the normalized domain is blocked
-    if (normalizedDomain && blockedDomains.includes(normalizedDomain)) {
-      chrome.tabs.update(activeTabId, { url: redirectPage });
-    }
   }
 }
 
@@ -66,14 +98,31 @@ function handleTabChange(newTabId, newUrl) {
 chrome.tabs.onActivated.addListener(({ tabId }) => {
   chrome.tabs.get(tabId, (tab) => {
     if (tab && tab.url) {
+      console.log('handleTabChange', tabId, tab.url)
       handleTabChange(tabId, tab.url);
     }
   });
 });
 
 // Detect URL changes on tabs
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+  const { tabId, url, frameId } = details;
+
+  // Ignore if not a top-level navigation
+  if (frameId !== 0 || !url || !url.startsWith("http")) {
+    return;
+  }
+  
+  if (url) {
+    console.log('handleTabChange', tabId, url)
+    handleTabChange(tabId, url);
+  }
+});
+
+// Detect URL changes on tabs
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.url) {
+    console.log('handleTabChange', tabId, changeInfo.url)
     handleTabChange(tabId, changeInfo.url);
   }
 });
@@ -185,6 +234,16 @@ function connectToDesktopApp() {
       chrome.storage.local.set({ blockedDomains }); // Persist the list in local storage
     }
   });
+
+  // Listen for updates to whitelisted domains
+  socket.on('website_whitelist_updated', (data) => {
+    console.log('asdlfjkljg')
+    if (data && data.websites) {
+      console.log('New website whitelist received from server:', data.websites);
+      whitelistedDomains = data.websites; // Overwrite the local list of whitelisted domains
+      chrome.storage.local.set({ whitelistedDomains }); // Persist the list in local storage
+    }
+  });  
 }
 
 connectToDesktopApp();
