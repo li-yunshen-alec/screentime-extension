@@ -8,6 +8,7 @@ let popupPort = null; // Reference to the connected popup port
 let browserFocused = true; // Track browser focus state
 let blockedDomains = []; // List of domains to block
 let whitelistedDomains = []; // List of domains to block
+let productivityMode = false; // Backend state for productivity mode
 const redirectPage = chrome.runtime.getURL("redirect.html");
 
 // Load blocked domains from local storage on extension startup
@@ -81,8 +82,14 @@ function handleTabChange(newTabId, newUrl) {
 
   // blocking logic
   console.log("normalized domain PLEASE", normalizedDomain)
+  console.log('productivityMode', productivityMode)
 
-  if (normalizedDomain && !isWhitelisted(newUrl) && blockedDomains.includes(normalizedDomain)) {
+  if (
+    productivityMode &&
+    normalizedDomain &&
+    !isWhitelisted(newUrl) &&
+    blockedDomains.includes(normalizedDomain)
+  ) {
     chrome.tabs.update(activeTabId, { url: redirectPage });
   }
 
@@ -242,6 +249,14 @@ function connectToDesktopApp() {
       console.log('New website whitelist received from server:', data.websites);
       whitelistedDomains = data.websites; // Overwrite the local list of whitelisted domains
       chrome.storage.local.set({ whitelistedDomains }); // Persist the list in local storage
+    }
+  });
+
+  // Listen for updates to productivity mode
+  socket.on('productivity_mode_updated', (data) => {
+    if (data && typeof data.mode === 'boolean') {
+      productivityMode = data.mode;
+      console.log('Productivity mode updated:', productivityMode);
     }
   });  
 }
