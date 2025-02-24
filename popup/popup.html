@@ -23,9 +23,14 @@
         margin-bottom: 8px;
         font-size: 14px;
       }
+      button { padding: 10px 20px; font-size: 16px; }
+      .blocking { background-color: #e74c3c; color: #fff; }
+      .allowed { background-color: #2ecc71; color: #fff; }
     </style>
   </head>
   <body>
+    <button id="toggleImages">Toggle Images</button>
+    <button id="toggleVideos">Toggle Videos</button>
     <h1>Site Usage Tracker</h1>
     <ul id="site-list"></ul>
     <script src="popup.js"></script>
