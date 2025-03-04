@@ -1,0 +1,252 @@
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --success: #10b981;
+  --danger: #ef4444;
+  --text: #1f2937;
+  --text-secondary: #6b7280;
+  --background: #ffffff;
+  --background-secondary: #f9fafb;
+  --border: #e5e7eb;
+  --shadow: rgba(0, 0, 0, 0.05);
+
+  --transition-speed: 0.2s;
+  --border-radius: 8px;
+}
+
+.dark-mode {
+  --primary: #6366f1;
+  --primary-hover: #818cf8;
+  --success: #34d399;
+  --danger: #f87171;
+  --text: #f9fafb;
+  --text-secondary: #9ca3af;
+  --background: #111827;
+  --background-secondary: #1f2937;
+  --border: #374151;
+  --shadow: rgba(0, 0, 0, 0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html
+{
+    width: 400px;  /* max: 800px */
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  width: 400px;
+  color: var(--text);
+  background-color: var(--background);
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+.container {
+  padding: 16px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+
+.btn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-icon {
+  font-size: 16px;
+}
+
+.lists-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.list-section {
+  background-color: var(--background-secondary);
+  border-radius: var(--border-radius);
+  padding: 12px;
+  box-shadow: 0 2px 4px var(--shadow);
+}
+
+.list-wrapper {
+  position: relative;
+  min-height: 40px;
+}
+
+.domain-list {
+  list-style-type: none;
+}
+
+.domain-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  background-color: var(--background);
+  border-radius: var(--border-radius);
+  font-size: 13px;
+  border-left: 3px solid var(--primary);
+  box-shadow: 0 1px 2px var(--shadow);
+  transition: transform var(--transition-speed);
+}
+
+.domain-list li:hover {
+  transform: translateX(2px);
+}
+
+#blockedList li {
+  border-left-color: var(--danger);
+}
+
+#whitelistedList li {
+  border-left-color: var(--success);
+}
+
+.empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-style: italic;
+  display: none;
+}
+
+.domain-list:empty + .empty-state {
+  display: block;
+}
+
+/* Dark mode toggle */
+.theme-toggle {
+  position: relative;
+  width: 40px;
+  height: 20px;
+}
+
+.toggle-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--text-secondary);
+  border-radius: 20px;
+  transition: var(--transition-speed);
+}
+
+.toggle-label:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: var(--transition-speed);
+}
+
+.toggle-input:checked + .toggle-label {
+  background-color: var(--primary);
+}
+
+.toggle-input:checked + .toggle-label:before {
+  transform: translateX(20px);
+}
+
+/* Status indicators */
+.blocking {
+  background-color: var(--danger);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.allowed {
+  background-color: var(--success);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 360px) {
+  body {
+    width: 100%;
+  }
+
+  .btn-text {
+    display: none;
+  }
+
+  .btn-icon {
+    font-size: 18px;
+  }
+}
+

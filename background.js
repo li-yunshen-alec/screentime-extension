@@ -1,12 +1,6 @@
 import { io } from "https://cdn.jsdelivr.net/npm/socket.io-client@4.7.1/+esm";
 
 // Global variables
-let siteUsage = {};           // Time spent per site tracking
-let activeTabId = null;       // Active tab ID
-let activeDomain = null;      // Active domain
-let startTime = null;         // Start time for active tab tracking
-let popupPort = null;         // Reference to the connected popup port
-let browserFocused = true;    // Browser focus state
 let blockedDomains = [];      // Domains to block (for redirection)
 let whitelistedDomains = [];  // Domains that bypass redirection
 
@@ -70,30 +64,12 @@ function isWhitelisted(url) {
 }
 
 // ----------------------------
-// Tracking Functions
+// Tab Change Handler
 // ----------------------------
-function saveUsageData(domain, timeSpent) {
-  if (!domain || timeSpent <= 0) return;
-  siteUsage[domain] = (siteUsage[domain] || 0) + timeSpent;
-  chrome.storage.local.set({ siteUsage });
-}
-function trackTime() {
-  if (!browserFocused || !activeTabId || !startTime || !activeDomain) return;
-  const now = Date.now();
-  const timeSpent = (now - startTime) / 1000;
-  saveUsageData(activeDomain, timeSpent);
-  startTime = now;
-}
 function handleTabChange(newTabId, newUrl) {
-  trackTime();
   const newDomain = getDomain(newUrl);
   if (newDomain && !isWhitelisted(newUrl) && blockedDomains.includes(newDomain)) {
     chrome.tabs.update(newTabId, { url: redirectPage });
-  }
-  if (newDomain !== activeDomain) {
-    activeTabId = newTabId;
-    activeDomain = newDomain;
-    startTime = browserFocused ? Date.now() : null;
   }
   // Apply video blocking on this tab.
   applyVideoBlockingForTab({ id: newTabId, url: newUrl });
@@ -217,7 +193,7 @@ async function toggleVideosSetting() {
 }
 
 // ----------------------------
-// Event Listeners: Tab events, focus, etc.
+// Event Listeners: Tab events
 // ----------------------------
 chrome.tabs.onActivated.addListener(({ tabId }) => {
   chrome.tabs.get(tabId, (tab) => {
@@ -242,54 +218,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     applyVideoBlockingForTab(tab);
   }
 });
-function checkBrowserFocus() {
-  chrome.windows.getLastFocused((win) => {
-    const focused = win.focused;
-    if (focused !== browserFocused) {
-      browserFocused = focused;
-      if (!browserFocused) {
-        trackTime();
-        startTime = null;
-      } else {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          if (tabs[0]) handleTabChange(tabs[0].id, tabs[0].url);
-        });
-      }
-    }
-  });
-}
-setInterval(checkBrowserFocus, 500);
-
-// ----------------------------
-// Popup connection (for real-time updates)
-// ----------------------------
-chrome.runtime.onConnect.addListener((port) => {
-  if (port.name === "popup") {
-    console.log("Popup connected");
-    popupPort = port;
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0] && tabs[0].url) handleTabChange(tabs[0].id, tabs[0].url);
-    });
-    const interval = setInterval(() => {
-      if (!popupPort) { clearInterval(interval); return; }
-      trackTime();
-      chrome.storage.local.get("siteUsage", (data) => {
-        try {
-          popupPort.postMessage({ siteUsage: data.siteUsage || {} });
-        } catch (e) {
-          console.error("Popup messaging error:", e.message);
-          clearInterval(interval);
-        }
-      });
-    }, 1000);
-    popupPort.onDisconnect.addListener(() => {
-      console.log("Popup disconnected");
-      popupPort = null;
-      clearInterval(interval);
-    });
-  }
-});
-setInterval(() => { if (!popupPort) trackTime(); }, 1000);
 
 // ----------------------------
 // Socket.IO Integration
@@ -298,7 +226,10 @@ let socket;
 function connectToDesktopApp() {
   socket = io("http://127.0.0.1:5000", {
     forceNew: true,
-    transports: ["websocket"]
+    transports: ["websocket"],
+    reconnectionAttempts: Infinity, // Keep trying to reconnect
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000
   });
   socket.on("connect", () => { console.log("Socket.IO connected"); });
   socket.on("success", (msg) => { console.log("Server message:", msg); });
@@ -319,10 +250,9 @@ function connectToDesktopApp() {
     if (data && data.websites) {
       whitelistedDomains = data.websites;
       chrome.storage.local.set({ whitelistedDomains });
-      // Optionally, refresh rules if needed.
     }
   });
-  socket.on("media_blocking_updated", (data) => {
+  socket.on("images_blocking_updated", (data) => {
     console.log("Media blocking update (images) received:", data);
     if (data && typeof data.enabled === "boolean") {
       mediaBlockingEnabled = data.enabled;
@@ -345,21 +275,6 @@ function connectToDesktopApp() {
   });
 }
 connectToDesktopApp();
-
-// ----------------------------
-// Periodically emit web usage
-// ----------------------------
-setInterval(() => {
-  chrome.storage.local.get(["siteUsage"], (data) => {
-    siteUsage = data.siteUsage || {};
-    if (socket && socket.connected) {
-      console.log("Emitting web usage");
-      socket.emit("web_usage", siteUsage);
-    } else {
-      console.log("Socket not connected", socket, socket && socket.connected);
-    }
-  });
-}, 1000);
 
 // ----------------------------
 // Message Listener for Toggle Requests

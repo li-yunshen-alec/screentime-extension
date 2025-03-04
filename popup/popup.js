@@ -1,27 +1,37 @@
+// popup.js
+
 let port = chrome.runtime.connect({ name: "popup" }); // Establish connection with background
 
-// Function to update the UI
-function updateSiteUsage(siteUsage) {
-  const siteList = document.getElementById("site-list");
-  siteList.innerHTML = ""; // Clear previous list
-
-  // Populate with site usage data
-  for (const [site, time] of Object.entries(siteUsage)) {
-    const li = document.createElement("li");
-    li.textContent = `${site}: ${time.toFixed(2)} seconds`;
-    siteList.appendChild(li);
-  }
+// Domain list management
+function updateDomainList(listId, domains) {
+  const list = document.getElementById(listId);
+  list.innerHTML = domains.map(domain => 
+    `<li>${domain}</li>`
+  ).join('');
 }
 
-// Listen for real-time updates from the background
-port.onMessage.addListener((message) => {
-  if (message.siteUsage) {
-    updateSiteUsage(message.siteUsage);
-  }
+function refreshDomainLists() {
+  chrome.storage.local.get(
+    ["blockedDomains", "whitelistedDomains"],
+    ({ blockedDomains = [], whitelistedDomains = [] }) => {
+      updateDomainList("blockedList", blockedDomains);
+      updateDomainList("whitelistedList", whitelistedDomains);
+    }
+  );
+}
+
+// Initial load
+chrome.storage.sync.get(["imagesSetting", "videosBlocking"], (result) => {
+  // Existing toggle button code...
+  refreshDomainLists();
 });
 
-
-// popup.js
+// Listen for storage updates
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.blockedDomains || changes.whitelistedDomains) {
+    refreshDomainLists();
+  }
+});
 
 // Update toggle buttons based on stored settings.
 chrome.storage.sync.get(["imagesSetting", "videosBlocking"], (result) => {
@@ -72,3 +82,59 @@ document.getElementById("toggleVideos").addEventListener("click", () => {
     }
   });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Dark mode toggle functionality
+  const darkModeToggle = document.getElementById("darkModeToggle")
+  const body = document.body
+
+  // Check for saved theme preference or respect OS preference
+  const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)")
+  const savedTheme = localStorage.getItem("theme")
+
+  if (savedTheme === "dark" || (!savedTheme && prefersDarkScheme.matches)) {
+    body.classList.add("dark-mode")
+    darkModeToggle.checked = true
+  }
+
+  darkModeToggle.addEventListener("change", function () {
+    if (this.checked) {
+      body.classList.add("dark-mode")
+      localStorage.setItem("theme", "dark")
+    } else {
+      body.classList.remove("dark-mode")
+      localStorage.setItem("theme", "light")
+    }
+  })
+
+  const blockedList = document.getElementById("blockedList")
+  const whitelistedList = document.getElementById("whitelistedList")
+  const blockedEmpty = document.getElementById("blockedEmpty")
+  const whitelistedEmpty = document.getElementById("whitelistedEmpty")
+
+  if (blockedSites.length > 0) {
+    blockedEmpty.style.display = "none"
+    blockedSites.forEach((site) => {
+      const li = document.createElement("li")
+      li.textContent = site
+      const span = document.createElement("span")
+      span.textContent = "Blocked"
+      span.className = "blocking"
+      li.appendChild(span)
+      blockedList.appendChild(li)
+    })
+  }
+
+  if (whitelistedSites.length > 0) {
+    whitelistedEmpty.style.display = "none"
+    whitelistedSites.forEach((site) => {
+      const li = document.createElement("li")
+      li.textContent = site
+      const span = document.createElement("span")
+      span.textContent = "Allowed"
+      span.className = "allowed"
+      li.appendChild(span)
+      whitelistedList.appendChild(li)
+    })
+  }
+})

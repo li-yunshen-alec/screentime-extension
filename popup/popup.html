@@ -4,35 +4,50 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Site Usage Tracker</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        width: 300px;
-        padding: 10px;
-        background-color: #f5f5f5;
-      }
-      h1 {
-        font-size: 18px;
-        margin-bottom: 10px;
-      }
-      ul {
-        list-style-type: none;
-        padding-left: 0;
-      }
-      li {
-        margin-bottom: 8px;
-        font-size: 14px;
-      }
-      button { padding: 10px 20px; font-size: 16px; }
-      .blocking { background-color: #e74c3c; color: #fff; }
-      .allowed { background-color: #2ecc71; color: #fff; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
-    <button id="toggleImages">Toggle Images</button>
-    <button id="toggleVideos">Toggle Videos</button>
-    <h1>Site Usage Tracker</h1>
-    <ul id="site-list"></ul>
+    <div class="container">
+      <header>
+        <h1>Site Usage Tracker</h1>
+        <div class="theme-toggle">
+          <input type="checkbox" id="darkModeToggle" class="toggle-input">
+          <label for="darkModeToggle" class="toggle-label"></label>
+        </div>
+      </header>
+      
+      <div class="controls">
+        <button id="toggleImages" class="btn blocking">
+          <span class="btn-text">Images Blocked</span>
+        </button>
+        <button id="toggleVideos" class="btn allowed">
+          <span class="btn-text">Videos Allowed</span>
+        </button>
+      </div>
+      
+      <div class="lists-container">
+        <div class="list-section">
+          <h3>Blocked Websites</h3>
+          <div class="list-wrapper">
+            <ul id="blockedList" class="domain-list"></ul>
+            <div class="empty-state" id="blockedEmpty">No blocked websites</div>
+          </div>
+        </div>
+        
+        <div class="list-section">
+          <h3>Whitelisted Websites</h3>
+          <div class="list-wrapper">
+            <ul id="whitelistedList" class="domain-list"></ul>
+            <div class="empty-state" id="whitelistedEmpty">No whitelisted websites</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <script src="popup.js"></script>
   </body>
 </html>
+
