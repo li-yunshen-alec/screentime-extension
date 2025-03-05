@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Site Usage Tracker</title>
+    <title>Clear Blocker</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,7 +12,7 @@
   <body>
     <div class="container">
       <header>
-        <h1>Site Usage Tracker</h1>
+        <h1>Clear Blocker</h1>
         <div class="theme-toggle">
           <input type="checkbox" id="darkModeToggle" class="toggle-input">
           <label for="darkModeToggle" class="toggle-label"></label>
@@ -20,14 +20,16 @@
       </header>
       
       <div class="controls">
-        <button id="toggleImages" class="btn blocking">
-          <span class="btn-text">Images Blocked</span>
-        </button>
-        <button id="toggleVideos" class="btn allowed">
-          <span class="btn-text">Videos Allowed</span>
-        </button>
+        <div class="status-item">
+          <span class="status-label">Images:</span>
+          <span id="imagesStatus">Blocked</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Videos:</span>
+          <span id="videosStatus">Allowed</span>
+        </div>
       </div>
-      
+            
       <div class="lists-container">
         <div class="list-section">
           <h3>Blocked Websites</h3>

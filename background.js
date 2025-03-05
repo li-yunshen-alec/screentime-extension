@@ -27,7 +27,7 @@ chrome.storage.local.get(["mediaBlocking"], (data) => {
   mediaBlockingEnabled = data.mediaBlocking || false;
   console.log("Media (images) blocking enabled:", mediaBlockingEnabled);
 });
-chrome.storage.sync.get(["videosBlocking"], (data) => {
+chrome.storage.local.get(["videosBlocking"], (data) => {
   videosBlockingEnabled = data.videosBlocking || false;
   console.log("Videos blocking enabled:", videosBlockingEnabled);
 });
@@ -118,7 +118,7 @@ async function setImagesSetting(setting) {
           reject(chrome.runtime.lastError);
         } else {
           console.log(`Images are now ${setting === "allow" ? "allowed" : "blocked"}.`);
-          chrome.storage.sync.set({ imagesSetting: setting }, () => {
+          chrome.storage.local.set({ imagesSetting: setting }, () => {
             refreshCurrentTab();
             resolve();
           });
@@ -176,7 +176,7 @@ function applyVideoBlockingForTab(tab) {
 async function toggleVideosSetting() {
   videosBlockingEnabled = !videosBlockingEnabled;
   return new Promise((resolve, reject) => {
-    chrome.storage.sync.set({ videosBlocking: videosBlockingEnabled }, () => {
+    chrome.storage.local.set({ videosBlocking: videosBlockingEnabled }, () => {
       if (chrome.runtime.lastError) {
         console.error("Error saving videos blocking setting:", chrome.runtime.lastError.message);
         reject(chrome.runtime.lastError);
@@ -266,7 +266,7 @@ function connectToDesktopApp() {
     console.log("Videos blocking update received:", data);
     if (data && typeof data.enabled === "boolean") {
       videosBlockingEnabled = data.enabled;
-      chrome.storage.sync.set({ videosBlocking: videosBlockingEnabled });
+      chrome.storage.local.set({ videosBlocking: videosBlockingEnabled });
       // Refresh active tab to update video blocking.
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]) applyVideoBlockingForTab(tabs[0]);

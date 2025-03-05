@@ -218,21 +218,17 @@ h3 {
 
 /* Status indicators */
 .blocking {
-  background-color: var(--danger);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
+  color: var(--danger);  /* red text for blocked state */
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
+  /* removed background, padding, and border-radius */
 }
 
 .allowed {
-  background-color: var(--success);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
+  color: var(--success);  /* green text for allowed state */
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
+  /* removed background, padding, and border-radius */
 }
 
 /* Responsive adjustments */
@@ -250,3 +246,27 @@ h3 {
   }
 }
 
+.status-item {
+  display: flex;
+  justify-content: flex-start; /* aligns items at the start */
+  align-items: center;
+  gap: 8px; /* adds a little space between the label and the status text */
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 4px;
+  background-color: var(--background-secondary);
+}
+
+.status-label {
+  font-weight: 500;
+}
+
+.status-blocking {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.status-allowed {
+  color: #22c55e;
+  font-weight: 600;
+}
