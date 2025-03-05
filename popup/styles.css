@@ -1,30 +1,25 @@
 :root {
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --success: #10b981;
-  --danger: #ef4444;
-  --text: #1f2937;
-  --text-secondary: #6b7280;
-  --background: #ffffff;
-  --background-secondary: #f9fafb;
-  --border: #e5e7eb;
-  --shadow: rgba(0, 0, 0, 0.05);
+  /* Using darker Tailwind stone colors for a shadcn/ui look */
+  --background: #0c0a09; /* stone-950 */
+  --background-secondary: #1c1917; /* stone-900 */
+  --foreground: #f5f5f4;
+  --muted: #44403c; /* stone-700 */
+  --muted-foreground: #78716c; /* stone-500 */
+  --card: #1c1917; /* stone-900 */
+  --card-foreground: #f5f5f4;
+  --border: #292524; /* stone-800 */
+  --input: #292524; /* stone-800 */
+  --primary: #78716c; /* stone-500 */
+  --primary-hover: #a8a29e; /* stone-400 */
+  --ring: #57534e; /* stone-600 */
+  --success: #059669; /* darker green */
+  --danger: #dc2626; /* darker red */
+  --text: #f5f5f4;
+  --text-secondary: #d6d3d1;
+  --shadow: rgba(0, 0, 0, 0.3);
 
-  --transition-speed: 0.2s;
-  --border-radius: 8px;
-}
-
-.dark-mode {
-  --primary: #6366f1;
-  --primary-hover: #818cf8;
-  --success: #34d399;
-  --danger: #f87171;
-  --text: #f9fafb;
-  --text-secondary: #9ca3af;
-  --background: #111827;
-  --background-secondary: #1f2937;
-  --border: #374151;
-  --shadow: rgba(0, 0, 0, 0.2);
+  --transition-speed: 0.15s;
+  --border-radius: 6px;
 }
 
 * {
@@ -33,9 +28,8 @@
   box-sizing: border-box;
 }
 
-html
-{
-    width: 400px;  /* max: 800px */
+html {
+  width: 400px; /* max: 800px */
 }
 
 body {
@@ -86,7 +80,7 @@ h3 {
   gap: 6px;
   padding: 10px;
   background-color: var(--primary);
-  color: white;
+  color: var(--background);
   border: none;
   border-radius: var(--border-radius);
   font-size: 14px;
@@ -119,6 +113,7 @@ h3 {
   border-radius: var(--border-radius);
   padding: 12px;
   box-shadow: 0 2px 4px var(--shadow);
+  border: 1px solid var(--border);
 }
 
 .list-wrapper {
@@ -161,7 +156,7 @@ h3 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   font-size: 13px;
   font-style: italic;
   display: none;
@@ -171,64 +166,17 @@ h3 {
   display: block;
 }
 
-/* Dark mode toggle */
-.theme-toggle {
-  position: relative;
-  width: 40px;
-  height: 20px;
-}
-
-.toggle-input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-label {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--text-secondary);
-  border-radius: 20px;
-  transition: var(--transition-speed);
-}
-
-.toggle-label:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  border-radius: 50%;
-  transition: var(--transition-speed);
-}
-
-.toggle-input:checked + .toggle-label {
-  background-color: var(--primary);
-}
-
-.toggle-input:checked + .toggle-label:before {
-  transform: translateX(20px);
-}
-
 /* Status indicators */
 .blocking {
-  color: var(--danger);  /* red text for blocked state */
+  color: var(--danger);
   font-size: 11px;
   font-weight: 600;
-  /* removed background, padding, and border-radius */
 }
 
 .allowed {
-  color: var(--success);  /* green text for allowed state */
+  color: var(--success);
   font-size: 11px;
   font-weight: 600;
-  /* removed background, padding, and border-radius */
 }
 
 /* Responsive adjustments */
@@ -248,25 +196,28 @@ h3 {
 
 .status-item {
   display: flex;
-  justify-content: flex-start; /* aligns items at the start */
+  justify-content: flex-start;
   align-items: center;
-  gap: 8px; /* adds a little space between the label and the status text */
+  gap: 4px;
   padding: 8px 12px;
   margin: 4px 0;
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   background-color: var(--background-secondary);
+  border: 1px solid var(--border);
 }
 
 .status-label {
   font-weight: 500;
+  color: var(--muted-foreground);
 }
 
 .status-blocking {
-  color: #ef4444;
+  color: var(--danger);
   font-weight: 600;
 }
 
 .status-allowed {
-  color: #22c55e;
+  color: var(--success);
   font-weight: 600;
 }
+
