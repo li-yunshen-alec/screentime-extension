@@ -224,7 +224,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 // ----------------------------
 let socket;
 function connectToDesktopApp() {
-  socket = io("http://127.0.0.1:5000", {
+  socket = io("http://127.0.0.1:58422", {
     forceNew: true,
     transports: ["websocket"],
     reconnectionAttempts: Infinity, // Keep trying to reconnect
