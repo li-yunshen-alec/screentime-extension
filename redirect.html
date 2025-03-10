@@ -1,58 +1,159 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Access Blocked</title>
     <style>
+        :root {
+            --stone-50: #fafaf9;
+            --stone-100: #f5f5f4;
+            --stone-200: #e7e5e4;
+            --stone-300: #d6d3d1;
+            --stone-400: #a8a29e;
+            --stone-500: #78716c;
+            --stone-600: #57534e;
+            --stone-700: #44403c;
+            --stone-800: #292524;
+            --stone-900: #1c1917;
+            --stone-950: #0c0a09;
+            --red-500: #ef4444;
+            --red-600: #dc2626;
+            --radius: 0.5rem;
+            --shadow-color: 0deg 0% 0%;
+            --shadow-elevation-low: 0px 1px 2px hsl(var(--shadow-color) / 0.2);
+            --shadow-elevation-medium: 
+                0px 1px 2px hsl(var(--shadow-color) / 0.2),
+                0px 4px 6px hsl(var(--shadow-color) / 0.14);
+            --shadow-elevation-high: 
+                0px 2px 4px hsl(var(--shadow-color) / 0.2),
+                0px 8px 16px hsl(var(--shadow-color) / 0.16);
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            line-height: 1.5;
+            height: 100%;
+        }
+
+        .dark {
+            background-color: var(--stone-950);
+            color: var(--stone-200);
+        }
+
         body {
-            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
-            color: #333;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(120, 113, 108, 0.1) 0%, rgba(28, 25, 23, 0) 50%);
+            pointer-events: none;
         }
 
         .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            border: 1px solid var(--stone-800);
+            background-color: var(--stone-900);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-elevation-medium);
             text-align: center;
-            max-width: 600px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            background: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            margin: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .icon-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .icon {
+            width: 64px;
+            height: 64px;
+            background-color: var(--stone-800);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon svg {
+            width: 32px;
+            height: 32px;
+            color: var(--red-500);
         }
 
         h1 {
             font-size: 24px;
-            margin-bottom: 10px;
-            color: #e74c3c;
+            margin-bottom: 16px;
+            color: var(--red-500);
+            font-weight: 600;
         }
 
         p {
             font-size: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            color: var(--stone-300);
         }
 
-        a {
+        .description {
+            font-size: 14px;
+            color: var(--stone-400);
+            margin-bottom: 24px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 16px;
+            background-color: var(--stone-800);
+            color: var(--stone-200);
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
             text-decoration: none;
-            color: #3498db;
+            transition: background-color 0.2s ease;
         }
 
-        a:hover {
-            text-decoration: underline;
+        .button:hover {
+            background-color: var(--stone-700);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Access to This Site is Blocked</h1>
-        <p>The site you are trying to visit is blocked.</p>
-        <p><a href="#" id="goBackLink">Go Back</a></p>
+        <div class="icon-container">
+            <div class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M14.5 9 9.5 14"></path>
+                    <path d="m9.5 9 5 5"></path>
+                </svg>
+            </div>
+        </div>
+        <h1>This site is blocked.</h1>
+        <p class="description">You have blocked the site you are trying to visit.</p>
+        <a href="#" id="goBackLink" class="button" onclick="window.history.back(); return false;">Go Back</a>
     </div>
-    <script src="redirect.js"></script>
+    <script>
+        // Simple script to handle the go back functionality
+        document.getElementById('goBackLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.history.back();
+        });
+    </script>
 </body>
 </html>

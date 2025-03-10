@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Time Tracker Extension",
+  "name": "Clear Blocker",
   "version": "1.0",
   "action": {
     "default_popup": "popup/popup.html"
@@ -18,8 +18,8 @@
   ],
   "host_permissions": ["<all_urls>"],
   "icons": {
-    "16": "icons/screen-time.png",
-    "48": "icons/screen-time.png",
-    "128": "icons/screen-time.png"
+    "16": "icons/logo.png",
+    "48": "icons/logo.png",
+    "128": "icons/logo.png"
   }
 }

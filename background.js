@@ -53,10 +53,8 @@ function normalizeDomain(domain) {
   return domain.replace(/^(https?:\/\/)?(www\.)?/i, "");
 }
 function isWhitelisted(url) {
-  console.log("Checking whitelist for", url);
-  const domain = getDomain(url);
-  if (!domain) return false;
-  const normalized = normalizeDomain(domain);
+  const normalized = normalizeDomain(url);
+  console.log("Checking whitelist for", normalized, whitelistedDomains);
   return whitelistedDomains.some((w) => {
     return normalized === normalizeDomain(w) ||
            normalized.startsWith(normalizeDomain(w));
@@ -68,6 +66,7 @@ function isWhitelisted(url) {
 // ----------------------------
 function handleTabChange(newTabId, newUrl) {
   const newDomain = getDomain(newUrl);
+  console.log('isWhitelisted(newUrl)', isWhitelisted(newUrl));
   if (newDomain && !isWhitelisted(newUrl) && blockedDomains.includes(newDomain)) {
     chrome.tabs.update(newTabId, { url: redirectPage });
   }
